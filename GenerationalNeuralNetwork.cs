@@ -1,3 +1,7 @@
+using System;
+using System.IO;
+using System.Linq;
+
 public class GenerationNeuralNetwork
 {
 	private NeuralNetwork[] _neuralNetworks;
@@ -386,35 +390,27 @@ public class GenerationNeuralNetwork
 			return _output;
 		}
 
-		private double Sigmoid(double value) => 1 / (1 + Math.Pow(Math.E, -value));
+		private static double Sigmoid(double value) => 1 / (1 + Math.Pow(Math.E, -value));
 
 		public double Cost(double[] expected, double[] input)
 		{
-			double cost = 0;
 			var value = GetOutput(input);
 
-			for (var i = 0; i < expected.Length; i++) cost += Math.Pow(expected[i] - value[i], 2);
-
-			return cost / expected.Length;
+			return expected.Select((t, i) => Math.Pow(t - value[i], 2)).Sum();
 		}
 
 		public double Cost(double[][] expected, double[][] input)
 		{
 			double cost = 0;
-			var a = 0;
 
 			for (var i = 0; i < expected.Length; i++)
 			{
 				var value = GetOutput(input[i]);
 
-				for (var j = 0; j < expected[i].Length; j++)
-				{
-					cost += Math.Pow(expected[i][j] - value[j], 2);
-					a++;
-				}
+				for (var j = 0; j < expected[i].Length; j++) cost += Math.Pow(expected[i][j] - value[j], 2);
 			}
 
-			return cost / a;
+			return cost;
 		}
 	}
 }
