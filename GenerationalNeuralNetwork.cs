@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -73,10 +74,10 @@ public class GenerationNeuralNetwork
 
 		for(var i = 0;i < errors.Length;i++) errors[i] = _neuralNetworks[i].Cost(input, expected);
 
-		for(var i = 0;i < errors.Length;i++)
-		for(var j = 0;j < errors.Length;j++)
-			if(errors[i] < errors[j])
-				_neuralNetworks[j].PerformanceNumber += 1;
+		foreach (var t in errors)
+			for(var j = 0;j < errors.Length;j++)
+				if(t < errors[j])
+					_neuralNetworks[j].PerformanceNumber += 1;
 	}
 
 
@@ -91,20 +92,16 @@ public class GenerationNeuralNetwork
 
 		for(var i = 0;i < errors.Length;i++) errors[i] = _neuralNetworks[i].Cost(input, expected);
 
-		for(var i = 0;i < errors.Length;i++)
-		for(var j = 0;j < errors.Length;j++)
-			if(errors[i] < errors[j])
-				_neuralNetworks[j].PerformanceNumber += 1;
+		foreach (var t in errors)
+			for(var j = 0;j < errors.Length;j++)
+				if(t < errors[j])
+					_neuralNetworks[j].PerformanceNumber += 1;
 	}
 
 	/// <summary>
 	/// Returns best performance neural network
 	/// </summary>
-	public NeuralNetwork GetBestNetwork(){
-		for(var i = 0;i < _neuralNetworks.Length;i++)
-			if(_neuralNetworks[i].PerformanceNumber == 1) return _neuralNetworks[i];
-		return null;
-	}
+	public NeuralNetwork GetBestNetwork() => _neuralNetworks.FirstOrDefault(t => t.PerformanceNumber == 1);
 
 	/// <summary>
 	/// Saves the best Neural Network
@@ -123,13 +120,7 @@ public class GenerationNeuralNetwork
 	/// </summary>
 	/// <param name="input">Input to networks to calculate error</param>
 	/// <param name="expected">expected output to networks to calculate error</param>
-	public double GetAverageCost(double[] input, double[] expected){
-		double averageCost = 0;
-
-		foreach (var t in _neuralNetworks) averageCost += t.Cost(input, expected);
-
-		return averageCost / _neuralNetworks.Length;
-	}
+	public double GetAverageCost(double[] input, double[] expected) => _neuralNetworks.Sum(t => t.Cost(input, expected)) / _neuralNetworks.Length;
 
 	/// <summary>
 	/// Return the average cost of all networks
@@ -137,11 +128,7 @@ public class GenerationNeuralNetwork
 	/// <param name="input">Input to networks to calculate error</param>
 	/// <param name="expected">expected output to networks to calculate error</param>
 	public double GetAverageCost(double[][] input, double[][] expected){
-		double averageCost = 0;
-
-		foreach (var t in _neuralNetworks) averageCost += t.Cost(input, expected);
-
-		return averageCost / _neuralNetworks.Length;
+		return _neuralNetworks.Sum(t => t.Cost(input, expected)) / _neuralNetworks.Length;
 	}
 
 	/// <summary>
@@ -341,13 +328,13 @@ public class GenerationNeuralNetwork
 
 		private void FirstRandomInit()
 		{
-			for (var y = 0; y < _weights.Length; y++)
-			for (var x = 0; x < _weights[y].Length; x++)
-				_weights[y][x] = (_random.NextDouble() - 0.5) * 2;
+			foreach (var t in _weights)
+				for (var x = 0; x < t.Length; x++)
+					t[x] = (_random.NextDouble() - 0.5) * 2;
 
-			for (var y = 0; y < _bias.Length; y++)
-			for (var x = 0; x < _bias[y].Length; x++)
-				_bias[y][x] = (_random.NextDouble() - 0.5) * 5;
+			foreach (var t in _bias)
+				for (var x = 0; x < t.Length; x++)
+					t[x] = (_random.NextDouble() - 0.5) * 5;
 		}
 
 		public double[] GetOutput(double[] input)
@@ -392,7 +379,7 @@ public class GenerationNeuralNetwork
 
 		private static double Sigmoid(double value) => 1 / (1 + Math.Pow(Math.E, -value));
 
-		public double Cost(double[] expected, double[] input)
+		public double Cost(IEnumerable<double> expected, double[] input)
 		{
 			var value = GetOutput(input);
 
